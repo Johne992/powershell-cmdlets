@@ -34,3 +34,4 @@ function Update-AzureRole {
         } else {
             New-AzureADMSRoleAssignment -ObjectId $ObjectId -RoleDefinitionId $RoleDefinitionId
         }
+    }
