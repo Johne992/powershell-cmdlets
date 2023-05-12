@@ -3,9 +3,7 @@ Connect-AzAccount
 
 $resourceGroupName = "myresourcegroup"
 $logAnalyticsWorkspaceName = "myLogAnalyticsWorkspace"
-$resourceNames = @(
-
-)
+$resourceNames = @("")
 
 $logAnalyticsWorkspace = Get-AzOperationalInsightsWorkspace -ResourceGroupName $resourceGroupName -Name $logAnalyticsWorkspaceName
 
