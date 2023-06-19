@@ -1,5 +1,5 @@
 #Create and configure Key Vault.  Permissions assigned in separate script or manually
-
+#v2.0.0 - made more readable and added access hash
 #Set Variables - UPDATE FOR EACH ENVIRONMENT
 $SubscriptionName = "SUBSCRIPTION NAME GOES HERE"
 $Location = "centralus"
