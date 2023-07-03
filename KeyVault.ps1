@@ -1,5 +1,5 @@
 #Create and configure Key Vault.  Permissions assigned in separate script or manually
-#v2.0.0 - made more readable and added access hash
+#v2.0.1 - made more readable and added access hash, typo corrected
 #Set Variables - UPDATE FOR EACH ENVIRONMENT
 $SubscriptionName = "SUBSCRIPTION NAME GOES HERE"
 $Location = "centralus"
@@ -10,7 +10,7 @@ $KeyVaultName = "kv01"
 $LocTag = "USCE - Central US"
 $EnvTag = "PROD - Production"
 $LogAnalyticsWs = "resourceID"
-$Access - @{
+$Access = @{
     "AzureAd-Object" = @("Key Vault Administrator","Key Vault Reader")
 }
 
