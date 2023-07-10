@@ -10,7 +10,7 @@ foreach ($server in $servers) {
         Add-Content -Path "C:\directory\Data\Data\domain.txt" -Value $server
     }
     else {
-        write-host "Domain is not lahsic.com" -ForegroundColor Red
+        write-host "Domain is not domain" -ForegroundColor Red
         #add to output file
         Add-Content -Path "C:\directory\Data\Data\other-domain.txt" -Value $server
     }
