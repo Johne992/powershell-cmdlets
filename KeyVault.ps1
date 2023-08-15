@@ -1,5 +1,5 @@
 #Create and configure Key Vault.  Permissions assigned in separate script or manually
-
+#v2.0.1 - made more readable and added access hash, typo corrected
 #Set Variables - UPDATE FOR EACH ENVIRONMENT
 $SubscriptionName = "SUBSCRIPTION NAME GOES HERE"
 $Location = "centralus"
@@ -10,7 +10,9 @@ $KeyVaultName = "kv01"
 $LocTag = "USCE - Central US"
 $EnvTag = "PROD - Production"
 $LogAnalyticsWs = "resourceID"
-
+$Access = @{
+    "AzureAd-Object" = @("Key Vault Administrator","Key Vault Reader")
+}
 
 #Set subscription context
 Set-AzContext -SubscriptionName $SubscriptionName
@@ -22,10 +24,43 @@ $RuleSet = New-AzKeyVaultNetworkRuleSetObject -DefaultAction Deny -Bypass AzureS
 
 #Create Key Vault
 write-host "Creating $KeyVaultName Key Vault!" -ForegroundColor Green
-$NewKeyVault = New-AzKeyVault -Name $KeyVaultName -ResourceGroupName $KVResourceGroupName -Location $Location -NetworkRuleSet $RuleSet -EnabledForTemplateDeployment -Tag @{CreatedBy=$CurrentUser.Id;CreatedDate=$CurrentDate;CostCenter=$CostCenter;NS_Location=$LocTag;NS_Environment=$EnvTag;NS_Application=$AppTag} -ErrorAction Stop
+$NewKeyVault = New-AzKeyVault -Name $KeyVaultName `
+-ResourceGroupName $KVResourceGroupName `
+-Location $Location `
+-NetworkRuleSet $RuleSet `
+-EnabledForTemplateDeployment `
+-Tag @{
+    CreatedBy=$CurrentUser.Id;
+    CreatedDate=$CurrentDate;
+    CostCenter=$CostCenter;
+    } `
+-ErrorAction Stop
 
 #Configure Diagnostic settings
 write-host "Enabling Diagnostics on $KeyVaultName" -ForegroundColor Green
-Set-AzDiagnosticSetting -ResourceId $NewKeyVault.ResourceId -Enabled $true -Category AuditEvent -Name "send to log analytics" -WorkspaceId $LogAnalyticsWs -ErrorAction Stop
+Set-AzDiagnosticSetting `
+-ResourceId $NewKeyVault.ResourceId `
+-Enabled $true `
+-Category AuditEvent `
+-Name "send to log analytics" `
+-WorkspaceId $LogAnalyticsWs `
+-ErrorAction Stop
 
-write-host "kv.ps1 script completed" -ForegroundColor Blue
+#Assign RBAC permissions to Key Vault
+write-host "Assigning RBAC permissions to $KeyVaultName" -ForegroundColor Green
+foreach ($AccessGroup in $Access.GetEnumerator()) {
+
+    #Get the object ID of the group
+    $AccessGroup.Name = (Get-AzADGroup -SearchString $AccessGroup.Name)
+    $AccessGroup.Value
+    foreach ($Role in $AccessGroup.Value) {
+        $Role
+        New-AzRoleAssignment `
+        -ObjectId $AccessGroup.Name.Id `
+        -RoleDefinitionName $Role `
+        -Scope $NewKeyVault.ResourceId `
+        -ErrorAction Stop
+    }
+}
+
+write-host "key-vault.ps1 script completed" -ForegroundColor Blue
