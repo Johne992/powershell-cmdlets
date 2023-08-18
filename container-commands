@@ -1,0 +1,14 @@
+#get container acl
+$filesystem = Get-AzDataLakeGen2Item -Context $ctx -FileSystem $ContainerName
+$filesystem.ACL
+
+#get directory acl
+$directory = Get-AzDataLakeGen2Item -Context $ctx -FileSystem $ContainerName -Path $NewStructuredDirectory
+$directory.ACL
+
+#Get the current ACL
+$currentACL = (Get-AzDataLakeGen2Item -Context $ctx -FileSystem $ContainerName -Path $NewStructuredDirectory).ACL
+$currentACL = Set-AzDataLakeGen2ItemAclObject -AccessControlType user -EntityId xxx -Permission rwx -InputObject $currentACL
+Update-AzDataLakeGen2Item -Context $ctx -FileSystem $filesystemName -Path $dirname -Acl $currentACL
+
+
