@@ -1,12 +1,23 @@
+param(
+    [Parameter()]
+    [string] $AzSPNPrefix,
+
+    [Parameter()]
+    [string] $AzSPNBase,
+
+    [Parameter()]
+    [string] $AzResourceBase,
+
+    [Parameter()]
+    [string] $AzResourcePrefix
+)
+
 #Set Variables
-$keyvaultName = ""
+$keyvaultName = "${AzResourcePrefix}usce${AzResourceBase}kv01"
 $ServicePrincipalsInfo = @{
-    "Service Principal Name"  = "Key vault secret name";
+    "${AzSPNPrefix}${AzSPNBase}ADB01"  = "AKV-ITCLINICALADB01-SPN-Write-secret";
+    "${AzSPNPrefix}${AzSPNBase}ADB01B" = "AKV-ITCLINICALADB01-SPN-Read-secret";
 }
-
-#Start Logging
-# Start-Transcript -Path ".\Deploy-$ResourceGroup-$(get-date -Format "yyyy-MM-dd")" -Append
-
 
 #for each Serviceprincipal in serviceprincipalsinfo create a new service principal, export the secret to a file and store the secret in keyvault
 foreach ($ServicePrincipal in $ServicePrincipalsInfo.GetEnumerator()) {
@@ -31,6 +42,3 @@ foreach ($ServicePrincipal in $ServicePrincipalsInfo.GetEnumerator()) {
     #Open Service Principal page in Azure Portal
     Start-Process "https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/Overview/$($sp.ApplicationId)"
 }
-
-#End Logging
-# Stop-Transcript

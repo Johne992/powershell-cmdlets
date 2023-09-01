@@ -20,7 +20,6 @@ $Access = @{
 # Start-Transcript -Path ".\Deploy-$ResourceGroup-$(get-date -Format "yyyy-MM-dd")" -Append
 
 
-
 #Set subscription context
 write-host "Set context to subscription where new Data Factory will be created" -ForegroundColor Green
 Set-AzContext -SubscriptionName $Subscription
