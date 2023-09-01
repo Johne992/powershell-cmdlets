@@ -82,14 +82,14 @@ $DatabricksName = "${AzResourcePrefix}usce${AzResourceBase}adb01"
 $ADBManagedRGName = "databricks-rg-${DataBricksName}" #Make sure that last part matches the databricks name
 
 $Access = @{
-    "$AzADPrefix Big Data Admin"        = @("Contributor");
-    "$AzADPrefix $AzADBase Bay Admin"   = @("Contributor");
-    "$AzADPrefix $AzADBase Bay Support" = @("reader");
-    "$AzADPrefix $AzADBase Bay Devs"    = @("reader");
-    "$AzADPrefix $AzADBase Bay QA"      = @("reader");
-    "$AzADPrefix $AzADBase Bay QA"      = @("reader");
-    "${AzSPNPrefix}DEXDEVOPS"           = @("Contributor");
-    "az-scim-adb"                       = @("Contributor");
+    "$AzADPrefix "        = @("Contributor");
+    "$AzADPrefix $AzADBase "   = @("Contributor");
+    "$AzADPrefix $AzADBase " = @("reader");
+    "$AzADPrefix $AzADBase "    = @("reader");
+    "$AzADPrefix $AzADBase "      = @("reader");
+    "$AzADPrefix $AzADBase "      = @("reader");
+    "${AzSPNPrefix}"           = @("Contributor");
+    "az"                       = @("Contributor");
 }
 
 
@@ -206,5 +206,3 @@ foreach ($AccessGroup in $Access.GetEnumerator()) {
 
 write-host "$DataBricksName.ps1 script completed!" -ForegroundColor Blue
 
-#Open the page of the resource in the portal
-Start-Process "https://portal.azure.com/#resource/$($NewDataBricks.Id)"

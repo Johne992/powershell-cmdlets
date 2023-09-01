@@ -7,99 +7,46 @@ Set-AzDataLakeGen2ItemAclObject command.
 
 Service Principals count as users for ACL purposes.
 
-v0.1 - 2023-08-18 - Initial working script there is an issue reading some of the azure ad groups and service principals some still has to be applied manually. 
 #>
 
 
-$SubscriptionName = "BCBSLA Prod Data and Analytics"
-$ADLSName = "prduscedexadls01" #Enter the name of the adls you want to use
+$SubscriptionName = ""
+$ADLSName = "" #Enter the name of the adls you want to use
 $containersAndACLs = @(
     @{
-        ContainerName = "bay-itclinical";
+        ContainerName = "container0";
         IsNew         = $true; #If this is a new container, set this to true
         ACLs          = @(
-            @{Id = "_PROD_ITCLINICALADB01"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $true },
-            @{Id = "_PROD_ITCLINICALADB01B"; Role = "r-x"; DefaultRole = "r-x"; Type = "user"; Recursive = $true },
-            @{Id = "_PROD_BIGDATAADMINBAY"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $true },
-            @{Id = "AzProd.DnA Big Data Admin"; Role = "r-x"; DefaultRole = "r-x"; Type = "group"; Recursive = $false },
-            @{Id = "AzProd.DnA IT Clinical Storage Curated Read"; Role = "r-x"; DefaultRole = ""; Type = "group"; Recursive = $false },
-            @{Id = "AzProd.DnA IT Clinical Storage Curated Write"; Role = "r-x"; DefaultRole = ""; Type = "group"; Recursive = $false }
+            @{Id = "azure ad entity"; Role = "r-x"; DefaultRole = ""; Type = "group"; Recursive = $false }
         );
         Directories   = @( #Specify directories and their ACLs
             @{
-                DirectoryName = "itclinical_structured";
+                DirectoryName = "directory0";
                 ACLS          = @(
-                    @{Id = "_PROD_ITCLINICALADB01"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $false },
-                    @{Id = "_PROD_ITCLINICALADB01B"; Role = "r-x"; DefaultRole = "r-x"; Type = "user"; Recursive = $false },
-                    @{Id = "_PROD_BIGDATAADMINBAY"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $false },
-                    @{Id = "AzProd.DnA Big Data Admin"; Role = "rwx"; DefaultRole = "rwx"; Type = "group"; Recursive = $false }
+                    @{Id = "azure ad entity"; Role = "r-x"; DefaultRole = ""; Type = "group"; Recursive = $false }
                 )
             }
             @{
-                DirectoryName = 'itclinical_curated';
+                DirectoryName = "directory1";
                 ACLs          = @(
-                    @{Id = "_PROD_ITCLINICALADB01"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $false },
-                    @{Id = "_PROD_ITCLINICALADB01B"; Role = "r-x"; DefaultRole = "r-x"; Type = "user"; Recursive = $false },
-                    @{Id = "_PROD_BIGDATAADMINBAY"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $false },
-                    @{Id = "AzProd.DnA Big Data Admin"; Role = "rwx"; DefaultRole = "rwx"; Type = "group"; Recursive = $false },
-                    @{Id = "AzProd.DnA IT Clinical Storage Curated Read"; Role = "r-x"; DefaultRole = "r-x"; Type = "user"; Recursive = $false },
-                    @{Id = "AzProd.DnA IT Clinical Storage Curated Write"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $false }
+                    @{Id = "azure ad entity"; Role = "r-x"; DefaultRole = ""; Type = "group"; Recursive = $false }
                 )
             }
         )
     }
     @{
-        ContainerName = "inbound";
+        ContainerName = "container1";
         IsNew         = $false; #If this is a new container, set this to true
         ACLs          = @(
-            @{Id = "AzProd.DnA Big Data Admin"; Role = "rwx"; DefaultRole = "rwx"; Type = "group"; Recursive = $false },
-            @{Id = "AzProd.DnA Storage Inbound IT Clinical Reader"; Role = "r-x"; DefaultRole = ""; Type = "group"; Recursive = $false },
-            @{Id = "AzProd.DnA Storage Inbound IT Clinical Writer"; Role = "rwx"; DefaultRole = ""; Type = "group"; Recursive = $false },
-            @{Id = "prduscedexdf01"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $false },
-            @{Id = "_PROD_ITCLINICALADB01"; Role = "r-x"; DefaultRole = ""; Type = "user"; Recursive = $false }
+            @{Id = "azure ad entity"; Role = "r-x"; DefaultRole = ""; Type = "group"; Recursive = $false }
         );
         Directories   = @(
             @{
-                DirectoryName = "itclinical";
+                DirectoryName = "directory3";
                 ACLs          = @(
-                    @{Id = "AzProd.DnA Big Data Admin"; Role = "rwx"; DefaultRole = "rwx"; Type = "group"; Recursive = $false },
-                    @{Id = "AzProd.DnA Storage Inbound IT Clinical Reader"; Role = "r-x"; DefaultRole = "r-x"; Type = "group"; Recursive = $false },
-                    @{Id = "AzProd.DnA Storage Inbound IT Clinical Writer"; Role = "rwx"; DefaultRole = "rwx"; Type = "group"; Recursive = $false },
-                    @{Id = "prduscedexdf01"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $false },
-                    @{Id = "_PROD_ITCLINICALADB01"; Role = "r-x"; DefaultRole = "r-x"; Type = "user"; Recursive = $false }
+                    @{Id = "azure ad entity"; Role = "r-x"; DefaultRole = ""; Type = "group"; Recursive = $false }
                 )
             }
-        )
-    }
-    @{
-        ContainerName = "outbound";
-        IsNew         = $false; #If this is a new container, set this to true
-        ACLs          = @(
-            @{Id = "AzProd.DnA Big Data Admin"; Role = "rwx"; DefaultRole = "rwx"; Type = "group"; Recursive = $false },
-            @{Id = "AzProd.DnA Storage Outbound IT Clinical Reader"; Role = "r-x"; DefaultRole = ""; Type = "group"; Recursive = $false },
-            @{Id = "AzProd.DnA Storage Outbound IT Clinical Writer"; Role = "rwx"; DefaultRole = ""; Type = "group"; Recursive = $false },
-            @{Id = "prduscedexdf01"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $false },
-            @{Id = "_PROD_ITCLINICALADB01"; Role = "r-x"; DefaultRole = ""; Type = "user"; Recursive = $false }
-        );
-        Directories   = @(
-            @{
-                DirectoryName = "itclinical";
-                ACLs          = @(
-                    @{Id = "AzProd.DnA Big Data Admin"; Role = "rwx"; DefaultRole = "rwx"; Type = "group"; Recursive = $false },
-                    @{Id = "AzProd.DnA Storage Outbound IT Clinical Reader"; Role = "r-x"; DefaultRole = "r-x"; Type = "group"; Recursive = $false },
-                    @{Id = "AzProd.DnA Storage Outbound IT Clinical Writer"; Role = "rwx"; DefaultRole = "rwx"; Type = "group"; Recursive = $false },
-                    @{Id = "prduscedexdf01"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $false },
-                    @{Id = "_PROD_ITCLINICALADB01"; Role = "r-x"; DefaultRole = "r-x"; Type = "user"; Recursive = $false }
-                )
-            }
-        )
-    }
-    @{
-        ContainerName = "structured";
-        IsNew         = $false; #If this is a new container, set this to true
-        ACLs          = @(
-            @{Id = "_PROD_BIGDATAADMINBAY"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $true },
-            @{Id = "_PROD_ITCLINICALADB01B"; Role = "r-x"; DefaultRole = "r-x"; Type = "user"; Recursive = $true }
         )
     }
 )

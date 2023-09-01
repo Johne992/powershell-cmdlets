@@ -13,10 +13,9 @@ param(
 )
 
 #Set Variables
-$keyvaultName = "${AzResourcePrefix}usce${AzResourceBase}kv01"
+$keyvaultName = "${AzResourcePrefix}${AzResourceBase}"
 $ServicePrincipalsInfo = @{
-    "${AzSPNPrefix}${AzSPNBase}ADB01"  = "AKV-ITCLINICALADB01-SPN-Write-secret";
-    "${AzSPNPrefix}${AzSPNBase}ADB01B" = "AKV-ITCLINICALADB01-SPN-Read-secret";
+    "${AzSPNPrefix}${AzSPNBase}" = "AKV-ITCLINICALADB01-SPN-Read-secret";
 }
 
 #for each Serviceprincipal in serviceprincipalsinfo create a new service principal, export the secret to a file and store the secret in keyvault
@@ -39,6 +38,4 @@ foreach ($ServicePrincipal in $ServicePrincipalsInfo.GetEnumerator()) {
     #Store Secret in Thycotic Secret Server
     # need to talk to matthew gill about this
 
-    #Open Service Principal page in Azure Portal
-    Start-Process "https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/Overview/$($sp.ApplicationId)"
 }

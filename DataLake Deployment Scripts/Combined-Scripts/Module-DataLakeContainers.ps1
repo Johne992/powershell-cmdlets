@@ -42,91 +42,44 @@ param(
 
 $containersAndACLs = @(
     @{
-        ContainerName = "bay-${AzResourceBase}";
+        ContainerName = "${AzResourceBase}_container";
         IsNew         = $true; #If this is a new container, set this to true
         ACLs          = @(
-            @{Id = "${AzSPNPrefix}${AzSPNBase}ADB01"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $true },
-            @{Id = "${AzSPNPrefix}${AzSPNBase}ADB01B"; Role = "r-x"; DefaultRole = "r-x"; Type = "user"; Recursive = $true },
-            @{Id = "${AzSPNPrefix}BIGDATAADMINBAY"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $true },
-            @{Id = "${AzADPrefix} Big Data Admin"; Role = "r-x"; DefaultRole = "r-x"; Type = "group"; Recursive = $false },
-            @{Id = "${AzADPrefix} ${AzADBase} Storage Curated Read"; Role = "r-x"; DefaultRole = ""; Type = "group"; Recursive = $false },
-            @{Id = "${AzADPrefix} ${AzADBase} Storage Curated Write"; Role = "r-x"; DefaultRole = ""; Type = "group"; Recursive = $false }
+            @{Id = "${AzSPNPrefix}${AzSPNBase}"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $true },
+            @{Id = "${AzADPrefix} ${AzADBase} "; Role = "r-x"; DefaultRole = ""; Type = "group"; Recursive = $false }
         );
         Directories   = @( #Specify directories and their ACLs
             @{
-                DirectoryName = "${AzResourceBase}_structured";
+                DirectoryName = "${AzResourceBase}_directory";
                 ACLS          = @(
-                    @{Id = "${AzSPNPrefix}${AzSPNBase}ADB01"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $false },
-                    @{Id = "${AzSPNPrefix}${AzSPNBase}ADB01B"; Role = "r-x"; DefaultRole = "r-x"; Type = "user"; Recursive = $false },
-                    @{Id = "${AzSPNPrefix}BIGDATAADMINBAY"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $false },
-                    @{Id = "${AzADPrefix} Big Data Admin"; Role = "rwx"; DefaultRole = "rwx"; Type = "group"; Recursive = $false }
+                    @{Id = "${AzSPNPrefix}${AzSPNBase}"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $true },
+                    @{Id = "${AzADPrefix} ${AzADBase} "; Role = "r-x"; DefaultRole = ""; Type = "group"; Recursive = $false }
                 )
             }
             @{
                 DirectoryName = "${AzResourceBase}_curated";
                 ACLs          = @(
-                    @{Id = "${AzSPNPrefix}${AzSPNBase}ADB01"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $false },
-                    @{Id = "${AzSPNPrefix}${AzSPNBase}ADB01B"; Role = "r-x"; DefaultRole = "r-x"; Type = "user"; Recursive = $false },
-                    @{Id = "${AzSPNPrefix}BIGDATAADMINBAY"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $false },
-                    @{Id = "${AzADPrefix} Big Data Admin"; Role = "rwx"; DefaultRole = "rwx"; Type = "group"; Recursive = $false },
-                    @{Id = "${AzADPrefix} ${AzADBase} Storage Curated Read"; Role = "r-x"; DefaultRole = "r-x"; Type = "user"; Recursive = $false },
-                    @{Id = "${AzADPrefix} ${AzADBase} Storage Curated Write"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $false }
+                    @{Id = "${AzSPNPrefix}${AzSPNBase}"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $true },
+                    @{Id = "${AzADPrefix} ${AzADBase} "; Role = "r-x"; DefaultRole = ""; Type = "group"; Recursive = $false }
                 )
             }
         )
     }
     @{
-        ContainerName = "inbound";
+        ContainerName = "container1";
         IsNew         = $false; #If this is a new container, set this to true
         ACLs          = @(
-            @{Id = "${AzADPrefix} Big Data Admin"; Role = "rwx"; DefaultRole = "rwx"; Type = "group"; Recursive = $false },
-            @{Id = "${AzADPrefix} Storage Inbound ${AzADBase} Reader"; Role = "r-x"; DefaultRole = ""; Type = "group"; Recursive = $false },
-            @{Id = "${AzADPrefix} Storage Inbound ${AzADBase} Writer"; Role = "rwx"; DefaultRole = ""; Type = "group"; Recursive = $false },
-            @{Id = "${AzResourcePrefix}uscedexdf01"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $false },
-            @{Id = "${AzSPNPrefix}${AzSPNBase}ADB01"; Role = "r-x"; DefaultRole = ""; Type = "user"; Recursive = $false }
+            @{Id = "${AzSPNPrefix}${AzSPNBase}"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $true },
+            @{Id = "${AzADPrefix} ${AzADBase} "; Role = "r-x"; DefaultRole = ""; Type = "group"; Recursive = $false }
         );
         Directories   = @(
             @{
                 DirectoryName = "${AzResourceBase}";
                 ACLs          = @(
-                    @{Id = "${AzADPrefix} Big Data Admin"; Role = "rwx"; DefaultRole = "rwx"; Type = "group"; Recursive = $false },
-                    @{Id = "${AzADPrefix} Storage Inbound ${AzADBase} Reader"; Role = "r-x"; DefaultRole = "r-x"; Type = "group"; Recursive = $false },
-                    @{Id = "${AzADPrefix} Storage Inbound ${AzADBase} Writer"; Role = "rwx"; DefaultRole = "rwx"; Type = "group"; Recursive = $false },
-                    @{Id = "${AzResourcePrefix}uscedexdf01"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $false },
-                    @{Id = "${AzSPNPrefix}${AzSPNBase}ADB01"; Role = "r-x"; DefaultRole = "r-x"; Type = "user"; Recursive = $false }
+                    @{Id = "${AzSPNPrefix}${AzSPNBase}"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $true },
+                    @{Id = "${AzADPrefix} ${AzADBase} "; Role = "r-x"; DefaultRole = ""; Type = "group"; Recursive = $false }
                 )
             }
-        )
-    }
-    @{
-        ContainerName = "outbound";
-        IsNew         = $false; #If this is a new container, set this to true
-        ACLs          = @(
-            @{Id = "${AzADPrefix} Big Data Admin"; Role = "rwx"; DefaultRole = "rwx"; Type = "group"; Recursive = $false },
-            @{Id = "${AzADPrefix} Storage Outbound ${AzADBase} Reader"; Role = "r-x"; DefaultRole = ""; Type = "group"; Recursive = $false },
-            @{Id = "${AzADPrefix} Storage Outbound ${AzADBase} Writer"; Role = "rwx"; DefaultRole = ""; Type = "group"; Recursive = $false },
-            @{Id = "${AzResourcePrefix}uscedexdf01"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $false },
-            @{Id = "${AzSPNPrefix}${AzSPNBase}ADB01"; Role = "r-x"; DefaultRole = ""; Type = "user"; Recursive = $false }
-        );
-        Directories   = @(
-            @{
-                DirectoryName = "${AzResourceBase}";
-                ACLs          = @(
-                    @{Id = "${AzADPrefix} Big Data Admin"; Role = "rwx"; DefaultRole = "rwx"; Type = "group"; Recursive = $false },
-                    @{Id = "${AzADPrefix} Storage Outbound ${AzADBase} Reader"; Role = "r-x"; DefaultRole = "r-x"; Type = "group"; Recursive = $false },
-                    @{Id = "${AzADPrefix} Storage Outbound ${AzADBase} Writer"; Role = "rwx"; DefaultRole = "rwx"; Type = "group"; Recursive = $false },
-                    @{Id = "${AzResourcePrefix}uscedexdf01"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $false },
-                    @{Id = "${AzSPNPrefix}${AzSPNBase}ADB01"; Role = "r-x"; DefaultRole = "r-x"; Type = "user"; Recursive = $false }
-                )
-            }
-        )
-    }
-    @{
-        ContainerName = "structured";
-        IsNew         = $false; #If this is a new container, set this to true
-        ACLs          = @(
-            @{Id = "${AzSPNPrefix}BIGDATAADMINBAY"; Role = "rwx"; DefaultRole = "rwx"; Type = "user"; Recursive = $true },
-            @{Id = "${AzSPNPrefix}${AzSPNBase}ADB01B"; Role = "r-x"; DefaultRole = "r-x"; Type = "user"; Recursive = $true }
         )
     }
 )

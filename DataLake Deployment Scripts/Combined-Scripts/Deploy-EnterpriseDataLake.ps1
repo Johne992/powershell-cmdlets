@@ -5,14 +5,14 @@ Start-Transcript -Path ".\Deploy-$ResourceGroup-$(get-date -Format "yyyy-MM-dd")
 
 ############ Variable Section ############
 #Set Variables
-$SubscriptionName = "BCBSLA Prod Data and Analytics"
-$Location = "centralus"
-$CostCenter = "1611"
+$SubscriptionName = ""
+$Location = ""
+$CostCenter = ""
 $CurrentDate = get-date -Format "yyyy.MM.dd"
-$LocTag = "USCE - Central US"
-$EnvTag = "PROD - Production"
-$AppTag = "ITC - IT Clinical"
-$SNOWTag = "REQ0719523"
+$LocTag = ""
+$EnvTag = ""
+$AppTag = ""
+$SNOWTag = ""
 
 #Help Generate Resource Names
 if ($SubscriptionName -like "Prod") {
@@ -51,9 +51,9 @@ $ADLSName = "${AzResourcePrefix}uscedexadls01"
 $ADLSRGName = "${AzResourcePrefix}uscedex${AzResourceBase}rg"
 $VNetResourceGroupName = "${AzResourcePrefix}uscevnetrg"
 $VNetName = "${AzResourcePrefix}uscevnet01" #This may change depending on subscription
-$AzResourceBase = "itclinical"
-$AzADBase = "IT Clinical"
-$AzSPNBase = "ITCLINICAL"
+$AzResourceBase = ""
+$AzADBase = ""
+$AzSPNBase = ""
 $ResourceGroupName = "${AzResourcePrefix}uscedex${AzResourceBase}rg"
 
 ######### End Variable Section #########
@@ -165,7 +165,6 @@ $ResourceGroup = New-AzResourceGroup `
     -AzResourcePrefix $AzResourcePrefix `
     -AzResourceBase $AzResourceBase `
     -ResourceGroupName $ResourceGroupName `
-    -ADLSName $ADLSName `
+    -ADLSName $ADLSName 
 
-#Open the page of the resource group
-Start-Process "https://portal.azure.com/#resource/$($ResourceGroup.ResourceId)"
+Stop-Transcript

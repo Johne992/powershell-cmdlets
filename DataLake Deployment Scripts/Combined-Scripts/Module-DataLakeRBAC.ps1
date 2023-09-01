@@ -19,14 +19,9 @@ param(
 )
 
 $Access = @{
-    "${AzADPrefix} Big Data Admin"                      = @("Storage Blob Data Reader", "Storage Account Contributor", "Reader");
-    "${AzADPrefix} ${AzADBase} Bay Admin"               = @("Reader");
-    "${AzADPrefix} ${AzADBase} Bay Support"             = @("Reader");
-    "${AzADPrefix} ${AzADBase} Bay Devs"                = @("Reader");
-    "${AzADPrefix} ${AzADBase} Storage Structured Read" = @("Reader");
-    "${AzADPrefix} ${AzADBase} Bay QA"                  = @("Reader");
-    "${AzADPrefix} ${AzADBase} Bay Analyst"             = @("Reader");
-    "${AzSPNPrefix}DEXDEVOPS"                           = @("Contributor");
+    "${AzADPrefix} "                      = @("Storage Blob Data Reader", "Storage Account Contributor", "Reader");
+    "${AzADPrefix} ${AzADBase} "               = @("Reader");
+    "${AzSPNPrefix}"                           = @("Contributor");
 }
 
 #Set subscription context

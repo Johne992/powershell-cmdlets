@@ -53,15 +53,11 @@ $DataFactoryName = "${AzResourcePrefix}uscebay${AzResourceBase}df01"
 
 #Set Variables
 $CurrentDate = get-date -Format "yyyy.MM.dd:HH.mm.ss"
-$LogAnalyticsWs = "/subscriptions/fe0cda9d-4f2d-45bb-9da4-c3b755c9dcef/resourcegroups/prduseaomsrg/providers/microsoft.operationalinsights/workspaces/prduseaomswsfe0cda9d4f"
+$LogAnalyticsWs = ""
 $Access = @{
-    "$AzADPrefix Big Data Admin"        = @("Custom - Data Factory Operator", "Monitoring Contributor");
-    "$AzADPrefix $AzADBase Bay Admin"   = @("Custom - Data Factory Operator");
-    "$AzADPrefix $AzADBase Bay Support" = @("Custom - Data Factory Operator");
-    "$AzADPrefix $AzADBase Bay Devs"    = @("Custom - Data Factory Operator");
-    "$AzADPrefix $AzADBase Bay QA"      = @("Custom - Data Factory Operator");
-    "$AzADPrefix $AzADBase Bay Analyst" = @("Custom - Data Factory Operator");
-    "${AzSPNPrefix}DEXDEVOPS"           = @("Custom - Data Factory Operator", "Contributor");
+    "$AzADPrefix "        = @("Custom - Data Factory Operator", "Monitoring Contributor");
+    "$AzADPrefix $AzADBase "   = @("Custom - Data Factory Operator");
+    "${AzSPNPrefix}"           = @("Custom - Data Factory Operator", "Contributor");
 }
 
 
@@ -127,6 +123,3 @@ foreach ($AccessGroup in $Access.GetEnumerator()) {
 }
 
 write-host "$DataFactoryName-1.ps1 script completed!" -ForegroundColor Blue
-
-#Open the page of the resource in the portal
-Start-Process "https://portal.azure.com/#resource/$($NewDataFactory.Id)"

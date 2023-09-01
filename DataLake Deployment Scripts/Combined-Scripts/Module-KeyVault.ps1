@@ -58,13 +58,12 @@ param(
 $CurrentDate = get-date -Format "yyyy.MM.dd"
 $KVResourceGroupName = "${AzResourcePrefix}uscedexkeyvaultrg"
 $KeyVaultName = "${AzResourcePrefix}usceitclinicalkv01"
-$LogAnalyticsWs = "/subscriptions/fe0cda9d-4f2d-45bb-9da4-c3b755c9dcef/resourcegroups/prduseaomsrg/providers/microsoft.operationalinsights/workspaces/prduseaomswsfe0cda9d4f"
-$subnetName = "asesn01"
+$LogAnalyticsWs = ""
+$subnetName = "sn01"
 $Access = @{
-    "${AzADPrefix} Big Data Admin"                    = @("Key Vault Contributor", "Key Vault Administrator");
-    "${AzSPNPrefix}DEXDEVOPS"                         = @("Key Vault Contributor", "Key Vault Administrator");
-    "AzureDatabricks"                                 = @("Key Vault Secrets Officer");
-    "${AzResourcePrefix}uscebay${AzResourceBase}df01" = @("Key Vault Administrator");
+    "${AzADPrefix} "                    = @("Key Vault Contributor", "Key Vault Administrator");
+    "${AzSPNPrefix}"                         = @("Key Vault Contributor", "Key Vault Administrator");
+    "${AzResourcePrefix}${AzResourceBase}" = @("Key Vault Administrator");
     "$CurrentUser"                                    = @("Key Vault Administrator");
     
 }
@@ -79,11 +78,7 @@ $subnetId = (Get-AzVirtualNetworkSubnetConfig -Name $subnetName -VirtualNetwork 
 
 #Ip Addresses
 $IPAddresses = @(
-    "66.248.253.0/24",
-    "52.242.208.117",
-    "52.158.213.200",
-    "52.232.225.139",
-    "52.177.165.205")  #Shrevport, and Azure IPs
+    "10.10.10.0/24")  #Shrevport, and Azure IPs
 $RuleSet = New-AzKeyVaultNetworkRuleSetObject -DefaultAction Deny -Bypass AzureServices -VirtualNetworkResourceId $subnetId -IpAddressRange $IPAddresses
 
 #Create Key Vault
@@ -147,13 +142,10 @@ foreach ($AccessGroup in $Access.GetEnumerator()) {
     }
 }
 
-#copy bigdataadmin secret from another keyvault
-write-host "Copying bigdataadmin secret from another keyvault" -ForegroundColor Green
-$Secret = Get-AzKeyVaultSecret -VaultName "prdusceitproviderkv01" -Name "AKV-BIGDATAADMINADB01-SPN-Write-secret"
-Set-AzKeyVaultSecret -VaultName $KeyVaultName -Name "AKV-BIGDATAADMINADB01-SPN-Write-secret" -SecretValue $Secret.SecretValue -ErrorAction Stop
+#copy  secret from another keyvault
+write-host "Copying secret from another keyvault" -ForegroundColor Green
+$Secret = Get-AzKeyVaultSecret -VaultName "KV01" -Name "secret01"
+Set-AzKeyVaultSecret -VaultName $KeyVaultName -Name "secret01" -SecretValue $Secret.SecretValue -ErrorAction Stop
 
 
 write-host "$KeyVaulName.ps1 script completed" -ForegroundColor Blue
-
-#Open the page of the resource in the portal
-Start-Process "https://portal.azure.com/#resource/$($NewKeyVault.ResourceId)"
