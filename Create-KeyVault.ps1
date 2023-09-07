@@ -1,6 +1,7 @@
 #Create and configure Key Vault.  Permissions assigned in separate script or manually
-#v2.0.1 - made more readable and added access hash, typo corrected
-#v2.1.0 - 2023.08.16 corrected errors and updated networking, diagnostics, and RBAC
+#v1.0.1 - made more readable and added access hash, typo corrected
+#v1.1.0 - 2023.08.16 corrected errors and updated networking, diagnostics, and RBAC
+#v1.2.0 - Added Transcript and removed portal view
 #Set Variables - UPDATE FOR EACH ENVIRONMENT
 $SubscriptionName = "SUBSCRIPTION NAME GOES HERE"
 $Location = "centralus"
@@ -17,6 +18,9 @@ $Access = @{
 $vnetResourceGroup = "rg"
 $vnetName = "vnet01"
 $subnetName = "sn01"
+
+#Start Logging
+# Start-Transcript -Path "C:\Temp\Deploy-$ResourceGroup-$(get-date -Format "yyyy-MM-dd")" -Append
 
 #Set subscription context
 Set-AzContext -SubscriptionName $SubscriptionName
@@ -87,5 +91,5 @@ foreach ($AccessGroup in $Access.GetEnumerator()) {
 
 rite-host "$KeyVaulName.ps1 script completed" -ForegroundColor Blue
 
-#Open the page of the resource in the portal
-Start-Process "https://portal.azure.com/#resource/$($NewKeyVault.ResourceId)"
+#End Logging
+# Stop-Transcript
