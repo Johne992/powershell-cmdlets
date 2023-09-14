@@ -19,7 +19,7 @@ param(
 )
 
 #Add Access
-write-host "Assigning Access to $DataBricksName" -ForegroundColor Green
+write-host "Assigning Access to $(Get-AzResoruce -ResourceId $ResourceId).Name" -ForegroundColor Green
 foreach ($AccessGroup in $Access.GetEnumerator()) {
     #Check if group or azure ad object
     if ($AccessGroup.Name -like "*DEVOPS*") {
