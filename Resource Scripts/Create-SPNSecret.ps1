@@ -41,8 +41,6 @@ foreach ($ServicePrincipal in $ServicePrincipalsInfo.GetEnumerator()) {
             -ContentType $ServicePrincipal.Name
     }
 
-    #Store Secret in Thycotic Secret Server
-    # need to talk to matthew gill about this
 
 }
 
