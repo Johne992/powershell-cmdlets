@@ -25,8 +25,6 @@ foreach ($ServicePrincipal in $ServicePrincipalsInfo.GetEnumerator()) {
     $secretPath = Join-Path -Path $PSScriptRoot -ChildPath "$($ServicePrincipal)-secret.txt"
     $sp.PasswordCredentials.SecretText | Out-File -FilePath $secretPath
 
-    #Store Secret in Thycotic Secret Server
-    # need to talk to matthew gill about this
 
 }
 
