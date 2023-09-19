@@ -3,6 +3,9 @@
 #Start Logging
 Start-Transcript -Path ".\Deploy-$ResourceGroup-$(get-date -Format "yyyy-MM-dd")" -Append
 
+# Dot Sourcing
+. ..\..\..\Utilities\Invoke-Script.ps1
+
 ############ Variable Section ############
 #Set Variables
 $SubscriptionName = ""
@@ -20,18 +23,21 @@ if ($SubscriptionName -like "Prod") {
     $AzSPNPrefix = "_PROD_"
     $AzResourcePrefix = "prd"
 
-} elseif ($SubscriptionName -like "Test") {
+}
+elseif ($SubscriptionName -like "Test") {
     $AzADPrefix = "AzTest"
     $AzSPNPrefix = "_TEST_"
     $AzResourcePrefix = "tst"
 
-} elseif ($SubscriptionName -like "POC"){ 
+}
+elseif ($SubscriptionName -like "POC") { 
     #POC is for Proof of concept and is a temporary subscription so dev is fine
     $AzADPrefix = "AzDev"
     $AzSPNPrefix = "_POC_"
     $AzResourcePrefix = "POC"
 
-}else {
+}
+else {
     $AzADPrefix = "AzDev"
     $AzSPNPrefix = "_DEV_"
     $AzResourcePrefix = "dev"
@@ -77,94 +83,108 @@ $ResourceGroup = New-AzResourceGroup `
 }
 
 #1. Call the Module-AzureDataFactory.ps1 script
-.\Module-DataFactory.ps1 `
-    -SubscriptionName $SubscriptionName `
-    -AzADPrefix $AzADPrefix `
-    -AzSPNPrefix $AzSPNPrefix `
-    -AzADBase $AzADBase `
-    -AzResourcePrefix $AzResourcePrefix `
-    -AzResourceBase $AzResourceBase `
-    -ResourceGroupName $ResourceGroupName `
-    -Location $Location `
-    -CostCenter $CostCenter `
-    -LocTag $LocTag `
-    -EnvTag $EnvTag `
-    -AppTag $AppTag `
-    -SNOWTag $SNOWTag `
-    -CurrentUser $CurrentUser
+Invoke-Script -ScriptPath .\Module-DataFactory.ps1 `
+    -ScriptArgs @{
+    SubscriptionName  = $SubscriptionName;
+    AzADPrefix        = $AzADPrefix;
+    AzSPNPrefix       = $AzSPNPrefix;
+    AzADBase          = $AzADBase;
+    AzResourcePrefix  = $AzResourcePrefix;
+    AzResourceBase    = $AzResourceBase;
+    ResourceGroupName = $ResourceGroupName;
+    ADLSName          = $ADLSName;
+    ADLSRGName        = $ADLSRGName;
+    Location          = $Location;
+    CostCenter        = $CostCenter;
+    LocTag            = $LocTag;
+    EnvTag            = $EnvTag;
+    AppTag            = $AppTag;
+    SNOWTag           = $SNOWTag;
+    CurrentUser       = $CurrentUser
+}
 
 #2. Call the Module-AzureDataBricks.ps1 script
-.\Module-DataBricks.ps1 `
-    -SubscriptionName $SubscriptionName `
-    -AzADPrefix $AzADPrefix `
-    -AzSPNPrefix $AzSPNPrefix `
-    -AzADBase $AzADBase `
-    -AzResourcePrefix $AzResourcePrefix `
-    -AzResourceBase $AzResourceBase `
-    -ResourceGroupName $ResourceGroupName `
-    -PubSubnetName $PubSubnetName `
-    -PubSubnetIP $PubSubnetIP `
-    -PriSubnetName $PriSubnetName `
-    -PriSubnetIP $PriSubnetIP `
-    -VNetResourceGroupName $VNetResourceGroupName `
-    -VNetName $VNetName `
-    -ADLSName $ADLSName `
-    -ADLSRGName $ADLSRGName `
-    -Location $Location `
-    -CostCenter $CostCenter `
-    -LocTag $LocTag `
-    -EnvTag $EnvTag `
-    -AppTag $AppTag `
-    -SNOWTag $SNOWTag `
-    -CurrentUser $CurrentUser
+Invoke-Script -ScriptPath .\Module-DataBricks.ps1 `
+    -ScriptArgs @{
+    SubscriptionName      = $SubscriptionName;
+    AzADPrefix            = $AzADPrefix;
+    AzSPNPrefix           = $AzSPNPrefix;
+    AzSPNBase             = $AzSPNBase;
+    AzADBase              = $AzADBase;
+    AzResourcePrefix      = $AzResourcePrefix;
+    AzResourceBase        = $AzResourceBase;
+    ResourceGroupName     = $ResourceGroupName;
+    PubSubnetName         = $PubSubnetName;
+    PubSubnetIP           = $PubSubnetIP;
+    PriSubnetName         = $PriSubnetName;
+    PriSubnetIP           = $PriSubnetIP;
+    VNetResourceGroupName = $VNetResourceGroupName;
+    VNetName              = $VNetName;
+    ADLSName              = $ADLSName;
+    ADLSRGName            = $ADLSRGName;
+    Location              = $Location;
+    CostCenter            = $CostCenter;
+    LocTag                = $LocTag;
+    EnvTag                = $EnvTag;
+    AppTag                = $AppTag;
+    SNOWTag               = $SNOWTag;
+    CurrentUser           = $CurrentUser
+}
 
 #3. Call the Module-KeyVault.ps1 script
-.\Module-KeyVault.ps1 `
-    -SubscriptionName $SubscriptionName `
-    -AzADPrefix $AzADPrefix `
-    -AzSPNPrefix $AzSPNPrefix `
-    -AzADBase $AzADBase `
-    -AzResourcePrefix $AzResourcePrefix `
-    -AzResourceBase $AzResourceBase `
-    -ResourceGroupName $ResourceGroupName `
-    -Location $Location `
-    -CostCenter $CostCenter `
-    -LocTag $LocTag `
-    -EnvTag $EnvTag `
-    -AppTag $AppTag `
-    -SNOWTag $SNOWTag `
-    -CurrentUser $CurrentUser
+Invoke-Script -ScriptPath .\Module-KeyVault.ps1 `
+    -ScriptArgs @{
+    SubscriptionName  = $SubscriptionName;
+    AzADPrefix        = $AzADPrefix;
+    AzSPNPrefix       = $AzSPNPrefix;
+    AzADBase          = $AzADBase;
+    AzResourcePrefix  = $AzResourcePrefix;
+    AzResourceBase    = $AzResourceBase;
+    ResourceGroupName = $ResourceGroupName;
+    Location          = $Location;
+    CostCenter        = $CostCenter;
+    LocTag            = $LocTag;
+    EnvTag            = $EnvTag;
+    AppTag            = $AppTag;
+    SNOWTag           = $SNOWTag;
+    CurrentUser       = $CurrentUser
+}
 
 #4. Call the Module-ServicePrincipal.ps1 script
-.\Module-ServicePrincipal.ps1 `
-    -SubscriptionName $SubscriptionName `
-    -AzSPNPrefix $AzSPNPrefix `
-    -AzSPNBase $AzSPNBase `
-    -AzResourcePrefix $AzResourcePrefix `
-    -AzResourceBase $AzResourceBase `
+Invoke-Script -ScriptPath .\Module-ServicePrincipal.ps1 `
+    -ScriptArgs @{
+    SubscriptionName = $SubscriptionName;
+    AzSPNPrefix      = $AzSPNPrefix;
+    AzADBase         = $AzADBase;
+    AzResourcePrefix = $AzResourcePrefix;
+    AzResourceBase   = $AzResourceBase;
+}
 
 #5. Call the Module-DataLakeRBAC.ps1 script
-.\Module-DataLakeRBAC.ps1 `
-    -SubscriptionName $SubscriptionName `
-    -AzADPrefix $AzADPrefix `
-    -AzSPNPrefix $AzSPNPrefix `
-    -AzADBase $AzADBase `
-    -AzResourcePrefix $AzResourcePrefix `
-    -AzResourceBase $AzResourceBase `
-    -ResourceGroupName $ResourceGroupName `
-    -ADLSName $ADLSName `
-
+Invoke-Script -ScriptPath .\Module-DataLakeRBAC.ps1 `
+    -ScriptArgs @{
+    SubscriptionName  = $SubscriptionName;
+    AzADPrefix        = $AzADPrefix;
+    AzSPNPrefix       = $AzSPNPrefix;
+    AzADBase          = $AzADBase;
+    AzResourcePrefix  = $AzResourcePrefix;
+    AzResourceBase    = $AzResourceBase;
+    ResourceGroupName = $ResourceGroupName;
+    ADLSName          = $ADLSName;
+}
 
 #6. Call the Module-DataLakeContainers.ps1 script
-.\Module-DataLakeContainers.ps1 `
-    -SubscriptionName $SubscriptionName `
-    -AzADPrefix $AzADPrefix `
-    -AzSPNPrefix $AzSPNPrefix `
-    -AzSPNBase $AzSPNBase `
-    -AzADBase $AzADBase `
-    -AzResourcePrefix $AzResourcePrefix `
-    -AzResourceBase $AzResourceBase `
-    -ResourceGroupName $ResourceGroupName `
-    -ADLSName $ADLSName 
+Invoke-Script -ScriptPath .\Module-DataLakeContainers.ps1 `
+    -ScriptArgs @{ 
+    SubscriptionName  = $SubscriptionName;
+    AzADPrefix        = $AzADPrefix;
+    AzSPNPrefix       = $AzSPNPrefix;
+    AzADBase          = $AzADBase;
+    AzResourcePrefix  = $AzResourcePrefix;
+    AzResourceBase    = $AzResourceBase;
+    ResourceGroupName = $ResourceGroupName;
+    ADLSName          = $ADLSName;
+    CurrentUser       = $CurrentUser
+}
 
 Stop-Transcript
