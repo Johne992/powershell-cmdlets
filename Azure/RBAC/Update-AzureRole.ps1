@@ -36,13 +36,13 @@ function Set-AzureADRoleAssignment {
         }
   
         $roleDefinition = Get-AzRoleDefinition -Name $RoleDefinitionName
-        if ($roleDefinition -eq $null) {
+        if ($null -eq $roleDefinition) {
             Write-Error "Role definition '$RoleDefinitionName' not found."
             return
         }
   
         $roleAssignment = New-AzRoleAssignment -ObjectId $ObjectId -RoleDefinitionName $roleDefinition.Name -Scope $scope
-        if ($roleAssignment -eq $null) {
+        if ($null -eq $roleAssignment) {
             Write-Error "Failed to create role assignment for Azure AD Object ID '$ObjectId' and Role Definition Name '$RoleDefinitionName'."
         } else {
             Write-Output "Role assignment created successfully for Azure AD Object ID '$ObjectId' and Role Definition Name '$RoleDefinitionName'."
