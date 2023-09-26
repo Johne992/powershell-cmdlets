@@ -14,6 +14,14 @@ This repository contains a collection of PowerShell scripts and cmdlets designed
 
 ## Azure Scripts
 
+Azure Scripts Naming Convention
+
+- Create-XXX = stand-alone script
+- Deploy-XXX = Deploys with ARM-Template, will have dependencies
+- Module-XXX = intended to be part of a larger environment deployment, will have dependencies  
+
+Samples
+
 - [Add Azure RBAC](https://github.com/Johne992/powershell-cmdlets/blob/main/Access%20Change%20Templates/Add-AzureRBAC.ps1) - Script to add Azure Role-Based Access Control.
 - [Set Azure Redis User](https://github.com/Johne992/powershell-cmdlets/blob/main/Access%20Change%20Templates/Set-AzureRedisUser.ps1) - Configure users for Azure Redis.
 - [Azure DataBricks](https://github.com/Johne992/powershell-cmdlets/blob/main/AzureDataBricks.ps1) - Manage Azure DataBricks resources.

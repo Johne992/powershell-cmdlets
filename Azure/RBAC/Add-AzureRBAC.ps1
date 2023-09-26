@@ -2,7 +2,7 @@
     Created for: Utility
     Created by:  John Lewis
     Created on:  2023-09-13
-    Version:     1.1.0
+    Version:     1.1.1
     Purpose:     Add Azure Role Based Access Control to a resource
     Param:       $ResourceId - The resource ID of the resource to add access to
                  $Access - A hashtable of groups and roles to assign to the resource 
@@ -43,6 +43,11 @@ function Get-ObjectId {
 try {
 #Add Access
 write-host "Assigning Access to $(Get-AzResoruce -ResourceId $ResourceId).Name" -ForegroundColor Green
+#check if hashtable empty
+if ($Access.Count -eq 0) {
+    Write-Warning "No access to assign"
+    exit 0
+}
 foreach ($AccessGroup in $Access.GetEnumerator()) {
     #Get the object ID of the group
     $objectId = Get-ObjectId -Name $AccessGroup.Name
