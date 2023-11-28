@@ -1,4 +1,10 @@
-#Create and configure ADLS Gen 2. Permissions assigned in seperate script or manually
+<#
+    Updated for  2023
+    Created by:  John Lewis
+    Created on:  2023-10-06
+    Version:     1.0.0
+    Purpose:     Create Azure Data Lake Storage Gen 2
+#>
 
 #Set Variables - UPDATE FOR EACH ENVIRONMENT
 $SubscriptionName = "Sub"
@@ -12,16 +18,14 @@ $VNetName = "vnet01"
 $LocTag = "USCE - Central US"
 $EnvTag = "TST - Test"
 $AppTag = "App- Application"
-
-#DO NOT CHANGE
-$LogAnalyticsWs = "resource ID" #DO NOT CHANGE
+$LogAnalyticsWs = "resource ID"
 
 #Set subscription context
 Set-AzContext -SubscriptionName $SubscriptionName
 $CurrentUser = Get-AzContext | Select-Object -ExpandProperty Account
 
-#Get asesn01 subnet info
-$Subnet = Get-AzVirtualNetwork -ResourceGroupName $VNetResourceGroupName -Name $VNetName | Select-Object -ExpandProperty subnets | Where-Object  {$_.Name -eq "asesn01"}
+#Get subnet info
+$Subnet = Get-AzVirtualNetwork -ResourceGroupName $VNetResourceGroupName -Name $VNetName | Select-Object -ExpandProperty subnets | Where-Object  {$_.Name -eq ""}
 
 #Create ADLS Gen 2
 write-host "Creating $ADLSName Storage Account!" -ForegroundColor Green        
