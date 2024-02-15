@@ -7,8 +7,8 @@ The Azure Utilities Module contains a collection of functions that simplify comm
 
 .NOTES
 Author: John Lewis
-Version: 1.0
-Date: 01/17/2024
+Version: 1.1.0
+Date: 02/14/2024
 
 .LINK
 GitHub Repository: https://github.com/your-repo
@@ -960,5 +960,62 @@ function Update-AllDataLakeACLs {
     foreach ($container in $containers) {
         # Update ACLs for the container
         Add-ContainerACLs -ContainerName $container.Name -ACLs $ACLs -Context $Context
+    }
+}
+
+<#
+.SYNOPSIS
+This function updates the secret for a given service principal, writes it to a file, and stores it in Key Vault.
+
+.DESCRIPTION
+This function retrieves a service principal by its display name, generates a new secret for it, writes the secret to a file in the same directory as the script, and stores the secret in a specified Key Vault. Secret Expires 2 years after creation.
+
+.PARAMETER ServicePrincipalName
+The display name of the Azure AD service principal.
+
+.PARAMETER KeyvaultName
+The name of the Azure Key Vault where the secret will be stored.
+
+.PARAMETER SecretName
+The name of the secret in Key Vault.
+
+.EXAMPLE
+Update-ServicePrincipalSecret -ServicePrincipalName "MyServicePrincipal" -KeyvaultName "MyKeyVault" -SecretName "MySecret"
+
+#>
+function Update-ServicePrincipalSecret {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$ServicePrincipalName,
+        [Parameter(Mandatory = $true)]
+        [string]$KeyvaultName,
+        [Parameter(Mandatory = $true)]
+        [string]$SecretName
+    )
+
+    try {
+        $servicePrincipal = Get-AzADServicePrincipal -DisplayName $ServicePrincipalName
+        $servicePrincipal
+
+        if ($servicePrincipal) {
+            $endDate = (Get-Date).AddYears(2)
+            Remove-AzADAppCredential -ApplicationId $servicePrincipal.AppId 
+            $servicePrincipalSecret = New-AzADAppCredential -ApplicationId $servicePrincipal.AppId -EndDate $endDate -ErrorAction Stop
+            $servicePrincipalSecret
+
+            # Write the secret to a file
+            #$servicePrincipalSecret.SecretText | Out-File -FilePath "$PSScriptRoot\$ServicePrincipalName-secret.txt"
+
+            # Store the secret in Key Vault
+            $secret = ConvertTo-SecureString -String $servicePrincipalSecret.SecretText -AsPlainText -Force
+            Set-AzKeyVaultSecret -VaultName $KeyvaultName -Name $SecretName -SecretValue $secret -ContentType $ServicePrincipalName -Expires $endDate.AddDays(-10)
+        }
+        else {
+            Write-Error "Service Principal with name $ServicePrincipalName not found."
+        }
+    }
+    catch {
+        Write-Error "An error occurred while updating the service principal's secrets: $_"
     }
 }
