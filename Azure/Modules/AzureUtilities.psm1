@@ -7,8 +7,8 @@ The Azure Utilities Module contains a collection of functions that simplify comm
 
 .NOTES
 Author: John Lewis
-Version: 1.1.0
-Date: 02/14/2024
+Version: 1.2.0
+Date: 02/23/2024
 
 .LINK
 GitHub Repository: https://github.com/your-repo
@@ -188,13 +188,25 @@ function Add-AzRBAC {
         $contextSet = Set-AzureContext -SubscriptionName $SubscriptionName
 
         if (-not $contextSet) {
+            Write-Host "Failed to set Azure context for subscription $SubscriptionName" -ForegroundColor Red
             return
         }
 
-        Write-Host "Getting resource $ResourceName in resource group $ResourceGroupName"
-        $resource = Get-AzResource -ResourceGroupName $ResourceGroupName -Name $ResourceName
+        if ([string]::IsNullOrEmpty($ResourceName)) {
+            Write-Host "ResourceName parameter is null or empty. Adding Role Based Access to $ResourceGroupName"
+            $resourceGroup = Get-AzResourceGroup -Name $ResourceGroupName
+            Write-Host "Assigning access to $ResourceGroupName"
+            $target = $resourceGroup
+            $targetName = $ResourceGroupName
+        }
+        else {
+            Write-Host "Getting resource $ResourceName in resource group $ResourceGroupName"
+            $resource = Get-AzResource -ResourceGroupName $ResourceGroupName -Name $ResourceName
+            Write-Host "Assigning access to $ResourceName"
+            $target = $resource
+            $targetName = $ResourceName
+        }
 
-        Write-Host "Assigning Access to $ResourceName"
         foreach ($AccessGroup in $Access.GetEnumerator()) {
             $ObjectId = Get-ObjectId -Name $AccessGroup.Name
             $ObjectId
@@ -204,25 +216,30 @@ function Add-AzRBAC {
                 continue
             }
 
-            Write-Host "Assigning $($AccessGroup.Value) role to $($AccessGroup.Name) for resource $ResourceName"
+            Write-Host "Assigning $($AccessGroup.Value) role to $($AccessGroup.Name) for resource $targetName"
             foreach ($Role in $AccessGroup.Value) {
                 # Check if the role is already assigned
-                $existingRoleAssignment = Get-AzRoleAssignment -ObjectId $ObjectId -RoleDefinitionName $Role -Scope $resource.Id -ErrorAction SilentlyContinue
+                $existingRoleAssignment = Get-AzRoleAssignment -ObjectId $ObjectId -RoleDefinitionName $Role -Scope $target.Id -ErrorAction SilentlyContinue
     
                 if ($null -ne $existingRoleAssignment) {
-                    Write-Host "Role $Role is already assigned to $($AccessGroup.Name) for resource $ResourceName"
+                    Write-Host "Role $Role is already assigned to $($AccessGroup.Name) for resource $targetName"
                     continue
                 }
     
                 Write-Host "Assigning role $Role to $($AccessGroup.Name)"
-                New-AzRoleAssignment -ObjectId $ObjectId -RoleDefinitionName $Role -Scope $resource.Id -ErrorAction Stop
+                New-AzRoleAssignment -ObjectId $ObjectId -RoleDefinitionName $Role -Scope $target.Id -ErrorAction Stop
             }
         }
 
-        Write-Host "Successfully assigned access to $ResourceName"
+        Write-Host "Successfully assigned access to $targetName"
     }
     catch {
-        Write-Error "Failed to assign access to $ResourceName. Error: $($_.Exception.Message)"
+        if([string]::IsNullOrEmpty($ResourceName)) {
+            Write-Error "Failed to assign access to $ResourceGroupName. Error: $($_.Exception.Message)"
+        }
+        else {
+            Write-Error "Failed to assign access to $ResourceName. Error: $($_.Exception.Message)"
+        }
     }
 }
 
