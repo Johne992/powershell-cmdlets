@@ -6,8 +6,8 @@ The `AzureUtilities` PowerShell module provides a comprehensive suite of utility
 
 - **GitHub Repository:** [AzureUtilities Module](https://github.com/Johne992/powershell-cmdlets/blob/main/Azure/Modules/AzureUtilities.psm1)
 - **Author:** John Lewis
-- **Version:** 1.1.0
-- **Date:** 02/14/2024
+- **Version:** 1.2.0
+- **Date:** 02/23/2024
 
 ## Features
 
@@ -40,6 +40,9 @@ To use the `AzureUtilities` module, follow these steps:
    ```
 
 ## Changelog
+
+### Version 1.2.0 - 02/23/2024
+- Updated `Add-AzRBAC` function to include Azure Resource Groups
 
 ### Version 1.1.0 - 02/14/2024
 - Added `Update-ServicePrincipalSecret` function for managing service principal secrets.
