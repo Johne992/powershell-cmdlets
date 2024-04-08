@@ -6,7 +6,7 @@ The `AzureUtilities` PowerShell module provides a comprehensive suite of utility
 
 - **GitHub Repository:** [AzureUtilities Module](https://github.com/Johne992/powershell-cmdlets/blob/main/Azure/Modules/AzureUtilities.psm1)
 - **Author:** John Lewis
-- **Version:** 1.2.0
+- **Version:** 1.3.0
 - **Date:** 02/23/2024
 
 ## Features
@@ -40,6 +40,9 @@ To use the `AzureUtilities` module, follow these steps:
    ```
 
 ## Changelog
+
+### Version 1.3.0 - 02/23/2024
+- Updated `Get-ObjectId` function to version 2.0.0. This function now tries to identify the object type (user, group, service principal) in a sequential manner until it finds a match.
 
 ### Version 1.2.0 - 02/23/2024
 - Updated `Add-AzRBAC` function to include Azure Resource Groups
