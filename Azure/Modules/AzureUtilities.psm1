@@ -7,8 +7,10 @@ The Azure Utilities Module contains a collection of functions that simplify comm
 
 .NOTES
 Author: John Lewis
-Version: 1.2.0
-Date: 02/23/2024
+Version: 1.3.0
+Date: 04/08/2024
+Function Updates:
+- Get-ObjectId: 2.0.0
 
 .LINK
 GitHub Repository: https://github.com/your-repo
@@ -47,46 +49,28 @@ function Get-ObjectId {
 
     try {
         Write-Host "Getting object ID for $($Name)"
-        # Get the object ID of the group or user or service principal or managed identity
-        if ($Name -like "*DEXDEVOPS*" -or $Name -like "_*_*" -or $Name -match "^[a-z]{3}[a-z]{4}\w+\d*$") {
+        # Try to get the object ID as a service principal or managed identity
+        $Id = (Get-AzADServicePrincipal -ServicePrincipalName $Name).Id
+        if ($Id) {
             Write-Host "$($Name) identified as a serviceprincipal or managed identity"
-            # Get the object ID of the serviceprincipal or managed identity
-            $Id = (Get-AzADServicePrincipal -ServicePrincipalName $Name).Id
-            if ($Id) {
-                return $Id
-            }
-            else {
-                Write-Host "$($Name) not found" -ForegroundColor Red
-                return
-            }
+            return $Id
         }
-        elseif ($Name -like "*az-scim-adb*" -or $Name -match "^[a-z]\d+(oa|a)?(@lahsic.com)?$") {
+
+        # Try to get the object ID as a user
+        $Id = (Get-AzADUser -UserPrincipalName $Name).Id
+        if ($Id) {
             Write-Host "$($Name) identified as a user"
-            # Get the object ID of the azure ad user
-            $Id = (Get-AzADUser -UserPrincipalName $Name).Id
-            if ($Id) {
-                return $Id
-            }
-            else {
-                Write-Host "$($Name) not found" -ForegroundColor Red
-                return
-            }
+            return $Id
         }
-        elseif ($Name -like "Az*" -or $Name -match "\d*$") {
+
+        # Try to get the object ID as a group
+        $Id = (Get-AzADGroup -DisplayName $Name).Id
+        if ($Id) {
             Write-Host "$($Name) identified as a group"
-            # Get the object ID of the group
-            $Id = (Get-AzADGroup -DisplayName $Name).Id
-            if ($Id) {
-                return $Id
-            }
-            else {
-                Write-Host "$($Name) not found" -ForegroundColor Red
-                return
-            }
+            return $Id
         }
-        else {
-            Write-Host "$($Name) not identified as a user, group, serviceprincipal, or managed identity" -ForegroundColor Red
-        }
+
+        Write-Host "$($Name) not identified as a user, group, serviceprincipal, or managed identity" -ForegroundColor Red
     }
     catch {
         Write-Error "Failed to get the object ID for $Name. Error: $($_.Exception.Message)"
