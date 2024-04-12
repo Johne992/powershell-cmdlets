@@ -7,9 +7,11 @@ The Azure Utilities Module contains a collection of functions that simplify comm
 
 .NOTES
 Author: John Lewis
-Version: 1.3.0
-Date: 04/08/2024
+Version: 1.4.0
+Date: 04/11/2024
 Function Updates:
+- Add-ContainerACLs: 1.1.0
+- Remove-ContainerACLs: 1.0.0
 - Get-ObjectId: 2.0.0
 
 .LINK
@@ -29,12 +31,16 @@ Gets the object ID of a user, group, or service principal in Azure Active Direct
 
 .DESCRIPTION
 The Get-ObjectId function gets the object ID of a user, group, or service principal in Azure Active Directory based on the Name parameter.
+This function tries to identify the object type (user, group, service principal) in a sequential manner until it finds a match.
 
 .PARAMETER Name
 The name of the user, group, or service principal to get the object ID for.
 
 .EXAMPLE
 Get-ObjectId -Name "MyUserOrGroupOrServicePrincipal"
+
+.NOTES
+Version: 2.0.0
 #>
 function Get-ObjectId {
     param (
@@ -151,7 +157,7 @@ function Add-AzRBAC {
         [string]$SubscriptionName,
         [Parameter(Mandatory = $true)]
         [string]$ResourceGroupName,
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
         [string]$ResourceName,
         [Parameter(Mandatory = $true)]
         [hashtable]$Access
@@ -218,7 +224,7 @@ function Add-AzRBAC {
         Write-Host "Successfully assigned access to $targetName"
     }
     catch {
-        if([string]::IsNullOrEmpty($ResourceName)) {
+        if ([string]::IsNullOrEmpty($ResourceName)) {
             Write-Error "Failed to assign access to $ResourceGroupName. Error: $($_.Exception.Message)"
         }
         else {
@@ -412,7 +418,7 @@ function Add-SCIMAssignment {
             $ObjectId = Get-ObjectId -Name $AccessGroup
             $ObjectId
 
-            if($null -eq $ObjectId) {
+            if ($null -eq $ObjectId) {
                 Write-Host "Object ID not found for $($AccessGroup.Name)" -ForegroundColor Red
                 continue
             }
@@ -481,7 +487,7 @@ function Remove-SCIMAssignment {
             $ObjectId = Get-ObjectId -Name $AccessGroup
             $ObjectId
 
-            if($null -eq $ObjectId) {
+            if ($null -eq $ObjectId) {
                 Write-Host "Object ID not found for $($AccessGroup.Name)" -ForegroundColor Red
                 continue
             }
@@ -560,6 +566,21 @@ $ACLs = @(
 $Context = New-AzStorageContext -StorageAccountName "myStorageAccount" -UseConnectedAccount
 Add-ContainerACLs -ContainerName "myContainer" -ACLs $ACLs -Context $Context
 
+.NOTES
+Version: 1.2.0
+Date: 04/09/2024
+Updates:
+- Version 1.1.0: Updated the function to set the regular ACL first, then update it with the default ACL if it exists. 
+   This ensures that the regular ACL is always set, and the default ACL is set if it exists. Also, the function now 
+   sets the default scope correctly when setting the default ACL.
+- Version 1.2.0: Updated the function to separate the ACLs into recursive and non-recursive categories. The function 
+   now updates the ACLs after each loop iteration. This ensures that the ACLs are updated immediately after they are 
+   set in each loop iteration.
+
+.LINK
+https://learn.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-acl-powershell
+
+
 .LINK
 https://learn.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-acl-powershell
 #>
@@ -608,6 +629,9 @@ function Add-ContainerACLs {
             Write-Host "AAD_ID not found for $($acl.Id)" -ForegroundColor Red
         }
     }
+    # Initialize two empty ACL objects to store recursive and non-recursive ACLs
+    $recursiveACL = $null
+    $normalACL = $null
 
     foreach ($acl in $ACLs) {
         # Get the existing ACLs
@@ -619,27 +643,39 @@ function Add-ContainerACLs {
 
         # Add the ACL if it does not exist
         if (-not $aclExists) {
+            # Set the acl
+            $currentACL = Set-AzDataLakeGen2ItemAclObject -AccessControlType $acl.Type -EntityId $acl.Id -Permission $acl.Role -InputObject $existing.ACL
+
             # If defaultrole is not null, set the default acl
             if ($acl.DefaultRole) {
-                $currentACL = Set-AzDataLakeGen2ItemAclObject -AccessControlType $acl.Type -EntityId $acl.Id -Permission $acl.DefaultRole -DefaultScope -InputObject $existing.ACL
-                #if the directory is recursive, set the acl recursively
-                if ($acl.Recursive) {
-                    Update-AzDataLakeGen2AclRecursive -Context $Context -FileSystem $ContainerName -Acl $currentACL
-                }
-                else {
-                    Update-AzDataLakeGen2Item -Context $Context -FileSystem $ContainerName -Acl $currentACL
-                }
+                $currentACL = Set-AzDataLakeGen2ItemAclObject -AccessControlType $acl.Type -EntityId $acl.Id -Permission $acl.DefaultRole -DefaultScope -InputObject $currentACL
+            }
 
-                # Set the acl
-                $currentACL = Set-AzDataLakeGen2ItemAclObject -AccessControlType $acl.Type -EntityId $acl.Id -Permission $acl.Role -InputObject $existing.ACL
-
-                if ($acl.Recursive) {
-                    Update-AzDataLakeGen2AclRecursive -Context $Context -FileSystem $ContainerName -Acl $currentACL
-                }
-                else {
-                    Update-AzDataLakeGen2Item -Context $Context -FileSystem $ContainerName -Acl $currentACL
+            # Add the current ACL to the appropriate variable based on whether it's recursive or not
+            if ($acl.Recursive) {
+                $newRecursiveACL = Set-AzDataLakeGen2ItemAclObject -AccessControlType $acl.Type -EntityId $acl.Id -Permission $acl.DefaultRole -InputObject $currentACL
+                # Update the recursive ACLs if they exist
+                if ($newRecursiveACL) {
+                    $recursiveACL = Set-AzDataLakeGen2ItemAclObject -AccessControlType $acl.Type -EntityId $acl.Id -Permission $acl.DefaultRole -DefaultScope -InputObject $newRecursiveACL
                 }
             }
+            else {
+                $newNormalACL = Set-AzDataLakeGen2ItemAclObject -AccessControlType $acl.Type -EntityId $acl.Id -Permission $acl.DefaultRole -InputObject $currentACL
+                # Update the non-recursive ACLs if they exist
+                if ($newNormalACL) {
+                    $normalACL = Set-AzDataLakeGen2ItemAclObject -AccessControlType $acl.Type -EntityId $acl.Id -Permission $acl.DefaultRole -InputObject $newNormalACL
+                }
+            }
+        }
+
+        # Update the recursive ACLs if they exist
+        if ($recursiveACL) {
+            Update-AzDataLakeGen2AclRecursive -Context $Context -FileSystem $ContainerName -Acl $recursiveACL
+        }
+
+        # Update the non-recursive ACLs if they exist
+        if ($normalACL) {
+            Update-AzDataLakeGen2Item -Context $Context -FileSystem $ContainerName -Acl $normalACL
         }
     }
 }
@@ -755,7 +791,39 @@ function Add-DirectoryACLs {
 }
 
 
-<# INPROGRESS #>
+<#
+.SYNOPSIS
+This function removes the ACLs for a container.
+
+.DESCRIPTION
+This function first checks if the container exists. If the container does not exist, it is created. Then, for each ACL, it checks if the ACL already exists in the current ACLs of the container. If the ACL exists, it is removed.
+
+.PARAMETER ContainerName
+The name of the container.
+
+.PARAMETER ACLs
+An array of ACLs to be removed from the container.
+
+.PARAMETER Context
+The Azure Storage Context.
+
+.EXAMPLE
+$ACLs = @(
+    @{Id = "_PROD_ITCLINICALADB01"; Role = "---"; DefaultRole = $True; Type = "user"; Recursive = $true },
+    @{Id = "_PROD_ITCLINICALADB01B"; Role = "---"; DefaultRole = $False; Type = "user"; Recursive = $true }
+)
+
+$Context = New-AzStorageContext -StorageAccountName "myStorageAccount" -UseConnectedAccount
+Remove-ContainerACLs -ContainerName "myContainer" -ACLs $ACLs -Context $Context
+
+.NOTES
+Version: 1.0.0
+Date: 04/11/2024
+This is the first version of the function out of beta.
+
+.LINK
+https://docs.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-acl-powershell
+#>
 function Remove-ContainerACLs {
     [CmdletBinding()]
     param (
@@ -768,11 +836,13 @@ function Remove-ContainerACLs {
     )
 
     Write-Output "Checking if container exists"
+    # Check if the container exists
     $containerExists = Get-AzStorageContainer -Context $Context -Name $ContainerName -ErrorAction SilentlyContinue
 
+    # Create the container if it does not exist
     if (-not $containerExists) {
-        Write-Output "Container does not exist"
-        return
+        Write-Output "Creating Container"
+        New-AzDataLakeGen2Item -Context $Context -FileSystem $ContainerName -Directory
     }
 
     Write-Output "Container Exists!"
@@ -787,10 +857,12 @@ function Remove-ContainerACLs {
         # Replace AccessGroups 'AAD_ID' value with Azure AD Group Object ID or Azure AD Application ID
         if (Get-AzADGroup -SearchString $acl.Id) {
             $acl.Id = (Get-AzADGroup -SearchString $acl.Id).Id
+
             Write-Host "AAD_ID is $($acl.Id)"
         }
         elseif (Get-AzADServicePrincipal -DisplayName $acl.Id) {
             $acl.Id = (Get-AzADApplication -DisplayName $acl.Id).Id
+
             Write-Host "AAD_ID is $($acl.Id)"
         }
         else {
@@ -798,25 +870,51 @@ function Remove-ContainerACLs {
         }
     }
 
+    # Initialize two empty ACL objects to store recursive and non-recursive ACLs
+    $recursiveACL = $null
+
     foreach ($acl in $ACLs) {
         # Get the existing ACLs
         $existing = Get-AzDataLakeGen2Item -Context $Context -FileSystem $ContainerName
         $existing.ACL
 
-        # Check if the ACL exists
-        $aclExists = $existing.ACL | Where-Object { $_.EntityId -eq $acl.Id -and $_.AccessControlType -eq $acl.Type -and $_.Permission -eq $acl.Role }
+        # Check if the ACL already exists
+        # $aclExists = $existing.ACL | Where-Object { $_.EntityId -eq $acl.Id -and $_.AccessControlType -eq $acl.Type }
+        $aclExists = $True
 
         # Remove the ACL if it exists
         if ($aclExists) {
-            $currentACL = $existing.ACL | Where-Object { $_.EntityId -ne $acl.Id -or $_.AccessControlType -ne $acl.Type -or $_.Permission -ne $acl.Role }
-            Update-AzDataLakeGen2Item -Context $Context -FileSystem $ContainerName -Acl $currentACL
+
+            # Set the acl
+            $currentACL = Set-AzDataLakeGen2ItemAclObject -AccessControlType $acl.Type -EntityId $acl.Id -Permission $acl.Role 
+
+            # If defaultrole is not null, set the default acl
+            if ($acl.DefaultRole) {
+                
+                $currentACL = Set-AzDataLakeGen2ItemAclObject -AccessControlType $acl.Type -EntityId $acl.Id -Permission $acl.DefaultRole -DefaultScope -InputObject $currentACL
+        
+            }
+
+            # Add the current ACL to the appropriate variable 
+            $newRecursiveACL = Set-AzDataLakeGen2ItemAclObject -AccessControlType $acl.Type -EntityId $acl.Id -Permission $acl.DefaultRole -InputObject $currentACL
+                
+            # Update the recursive ACLs if they exist
+            if ($newRecursiveACL -ne $recursiveACL) {
+                $recursiveACL = Set-AzDataLakeGen2ItemAclObject -AccessControlType $acl.Type -EntityId $acl.Id -Permission $acl.DefaultRole -DefaultScope -InputObject $newRecursiveACL
+            }
+
+               
         }
     }
+
+    #Remove the ACLs
+    Remove-AzDataLakeGen2AclRecursive -Context $Context -FileSystem $ContainerName -Acl $recursiveACL -ContinueOnFailure
 }
+
 
 <#
 .SYNOPSIS
-This function updates the ACLs for containers and directories.
+This function updates the ACLs for containers and directories. You must have storage blob data owner on the storage account to do use this function.
 
 .DESCRIPTION
 This function calls the Add-ContainerACLs and Add-DirectoryACLs functions for each container and directory in the ContainersAndACLs array.
