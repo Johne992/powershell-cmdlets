@@ -7,12 +7,11 @@ The Azure Utilities Module contains a collection of functions that simplify comm
 
 .NOTES
 Author: John Lewis
-Version: 1.4.0
-Date: 04/11/2024
+Version: 1.5.1
+Created: 01/18/2024
+Updated: 05/16/2024
 Function Updates:
-- Add-ContainerACLs: 1.1.0
-- Remove-ContainerACLs: 1.0.0
-- Get-ObjectId: 2.0.0
+- Add-AzRBAC: 3.2.0
 
 .LINK
 GitHub Repository: https://github.com/your-repo
@@ -150,6 +149,12 @@ $access = @{
     "user@domain.com" = "Reader"
 }
 Add-AzRBAC -SubscriptionName "MySubscription" -ResourceGroupName "MyResourceGroup" -ResourceName "MyResource" -Access $access
+
+.NOTES
+Version:        3.2
+Author:         John Lewis
+Creation Date:  2024-05-01
+Purpose/Change: Updated the function to assign the first target Id that does not contain '/components/' when target Id is an array.
 #>
 function Add-AzRBAC {
     param (
@@ -163,7 +168,7 @@ function Add-AzRBAC {
         [hashtable]$Access
     )
 
-    if ([string]::IsNullOrEmpty($SubscriptionName) -or [string]::IsNullOrEmpty($ResourceGroupName) -or [string]::IsNullOrEmpty($ResourceName)) {
+    if ([string]::IsNullOrEmpty($SubscriptionName) -or [string]::IsNullOrEmpty($ResourceGroupName)) {
         Write-Error "SubscriptionName, ResourceGroupName, and ResourceName parameters cannot be null or empty."
         return
     }
@@ -208,8 +213,16 @@ function Add-AzRBAC {
 
             Write-Host "Assigning $($AccessGroup.Value) role to $($AccessGroup.Name) for resource $targetName"
             foreach ($Role in $AccessGroup.Value) {
+                # Store the Id in a separate variable
+                $targetId = if ($target.Id -is [System.Object[]]) { 
+                    $target.Id | Where-Object { $_ -notlike '*/components/*' } | Select-Object -First 1
+                }
+                else { 
+                    $target.Id 
+                }
+
                 # Check if the role is already assigned
-                $existingRoleAssignment = Get-AzRoleAssignment -ObjectId $ObjectId -RoleDefinitionName $Role -Scope $target.Id -ErrorAction SilentlyContinue
+                $existingRoleAssignment = Get-AzRoleAssignment -ObjectId $ObjectId -RoleDefinitionName $Role -Scope $targetId -ErrorAction SilentlyContinue
     
                 if ($null -ne $existingRoleAssignment) {
                     Write-Host "Role $Role is already assigned to $($AccessGroup.Name) for resource $targetName"
@@ -217,7 +230,7 @@ function Add-AzRBAC {
                 }
     
                 Write-Host "Assigning role $Role to $($AccessGroup.Name)"
-                New-AzRoleAssignment -ObjectId $ObjectId -RoleDefinitionName $Role -Scope $target.Id -ErrorAction Stop
+                New-AzRoleAssignment -ObjectId $ObjectId -RoleDefinitionName $Role -Scope $targetId -ErrorAction Stop
             }
         }
 
