@@ -7,11 +7,11 @@ The Azure Utilities Module contains a collection of functions that simplify comm
 
 .NOTES
 Author: John Lewis
-Version: 1.5.1
+Version: 1.5.2
 Created: 01/18/2024
-Updated: 05/16/2024
+Updated: 07/24/2024
 Function Updates:
-- Add-AzRBAC: 3.2.0
+- Get-ObjectId: 2.0.1 Updated the function to use -DisplayName parameter instead of -ServicePrincipalNameParamater for relevant Get-AzAD cmdlets.
 
 .LINK
 GitHub Repository: https://github.com/your-repo
@@ -39,7 +39,10 @@ The name of the user, group, or service principal to get the object ID for.
 Get-ObjectId -Name "MyUserOrGroupOrServicePrincipal"
 
 .NOTES
-Version: 2.0.0
+Version:        2.0.1
+Author:         John Lewis
+Creation Date:  2024-07-24
+Purpose/Change: Updated the funciton to use -DisplayName parameter instead of -ServicePrincipalNameParamater for relevant Get-AzAD cmdlets.
 #>
 function Get-ObjectId {
     param (
@@ -55,14 +58,14 @@ function Get-ObjectId {
     try {
         Write-Host "Getting object ID for $($Name)"
         # Try to get the object ID as a service principal or managed identity
-        $Id = (Get-AzADServicePrincipal -ServicePrincipalName $Name).Id
+        $Id = (Get-AzADServicePrincipal -DisplayName $Name).Id
         if ($Id) {
             Write-Host "$($Name) identified as a serviceprincipal or managed identity"
             return $Id
         }
 
         # Try to get the object ID as a user
-        $Id = (Get-AzADUser -UserPrincipalName $Name).Id
+        $Id = (Get-AzADUser -DisplayName $Name).Id
         if ($Id) {
             Write-Host "$($Name) identified as a user"
             return $Id
