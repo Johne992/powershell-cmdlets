@@ -7,12 +7,12 @@ The Azure Utilities Module contains a collection of functions that simplify comm
 
 .NOTES
 Author: John Lewis
-Version: 1.5.3
+Version: 1.6.0
 Created: 01/18/2024
-Updated: 07/25/2024
+Updated: 07/26/2024
 Function Updates:
-- Add-AzRBAC: 2.0.2 Updated the function to use -UserprincipalName if DisplayName does not return an object ID.
-
+- Deploy-ResourceGroup - checks if a resource group exists or not and deploy it if it does not exist.
+- Add-AzRBAC - updated to handle multiple object IDs for resources that are arrays of objects.
 .LINK
 GitHub Repository: https://github.com/your-repo
 
@@ -232,11 +232,11 @@ function Add-AzRBAC {
             Write-Host "Assigning $($AccessGroup.Value) role to $($AccessGroup.Name) for resource $targetName"
             foreach ($Role in $AccessGroup.Value) {
                 # Store the Id in a separate variable
-                $targetId = if ($target.Id -is [System.Object[]]) { 
-                    $target.Id | Where-Object { $_ -notlike '*/components/*' } | Select-Object -First 1
-                }
-                else { 
-                    $target.Id 
+                $targetId = $target.ResourceId  
+
+                #Check if the Id is an array of objects
+                if ($targetId -is [System.Object[]]) { 
+                    $targetId = $TargetId | Where-Object { $_ -notlike '*/components/*' } | Select-Object -First 1
                 }
 
                 # Check if the role is already assigned
@@ -1147,5 +1147,61 @@ function Update-ServicePrincipalSecret {
     }
     catch {
         Write-Error "An error occurred while updating the service principal's secrets: $_"
+    }
+}
+
+<#
+.SYNOPSIS
+This function ensures that a resource group exists in Azure.
+
+.DESCRIPTION
+This function checks if a resource group exists in Azure. If the resource group does not exist, it creates it in the specified location with the specified tags.
+
+.PARAMETER ResourceGroupName
+The name of the resource group to ensure.
+
+.PARAMETER Location
+The location where the resource group should be created.
+
+.PARAMETER Tags
+A hashtable of tags to assign to the resource group.
+
+.EXAMPLE
+Deploy-ResourceGroup -ResourceGroupName "MyResourceGroup" -Location "East US" -Tag @{"Environment"="Production"; "Department"="IT"}
+
+This command ensures that a resource group named "MyResourceGroup" exists in the "East US" location with the specified tags.
+
+.NOTES
+Version: 1.0.0
+Creation Date: 07/26/2024
+This is the first version of the function out of beta.
+
+.LINK
+https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/manage-resource-groups-portal
+#>
+function Deploy-ResourceGroup {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$ResourceGroupName,
+        [Parameter(Mandatory = $true)]
+        [string]$Location,
+        [Parameter(Mandatory = $false)]
+        [hashtable]$Tag
+    )
+
+    try {
+        $resourceGroup = Get-AzResourceGroup -Name $ResourceGroupName -ErrorAction SilentlyContinue
+
+        if (-not $resourceGroup) {
+            Write-Host "Creating resource group $ResourceGroupName in location $Location"
+            New-AzResourceGroup -Name $ResourceGroupName -Location $Location -Tag $Tag
+        }
+        else {
+            Write-Host "Resource group $ResourceGroupName already exists"
+        }
+    }
+    catch {
+        Write-Error "An error occurred while ensuring the resource group: $_"
     }
 }

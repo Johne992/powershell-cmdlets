@@ -41,6 +41,9 @@ To use the `AzureUtilities` module, follow these steps:
 
 ## Changelog
 
+### Version 1.6 07/26/2024
+- Added `Deploy-ResourceGroup` function to check if a resource group exists and deploy if not.
+
 ### Version 1.5.2 07/25/2024
 - Updated `Get-ObjectId` function
 
