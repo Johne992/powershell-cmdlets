@@ -7,11 +7,11 @@ The Azure Utilities Module contains a collection of functions that simplify comm
 
 .NOTES
 Author: John Lewis
-Version: 1.5.2
+Version: 1.5.3
 Created: 01/18/2024
-Updated: 07/24/2024
+Updated: 07/25/2024
 Function Updates:
-- Get-ObjectId: 2.0.1 Updated the function to use -DisplayName parameter instead of -ServicePrincipalNameParamater for relevant Get-AzAD cmdlets.
+- Add-AzRBAC: 2.0.2 Updated the function to use -UserprincipalName if DisplayName does not return an object ID.
 
 .LINK
 GitHub Repository: https://github.com/your-repo
@@ -39,10 +39,11 @@ The name of the user, group, or service principal to get the object ID for.
 Get-ObjectId -Name "MyUserOrGroupOrServicePrincipal"
 
 .NOTES
-Version:        2.0.1
+.NOTES
+Version:        2.0.2
 Author:         John Lewis
-Creation Date:  2024-07-24
-Purpose/Change: Updated the funciton to use -DisplayName parameter instead of -ServicePrincipalNameParamater for relevant Get-AzAD cmdlets.
+Creation Date:  2024-07-25
+Purpose/Change: Updated the funciton to use -UserPrincipalName parameter if -DisplayName parameter does not return an object ID for a user.
 #>
 function Get-ObjectId {
     param (
@@ -58,24 +59,38 @@ function Get-ObjectId {
     try {
         Write-Host "Getting object ID for $($Name)"
         # Try to get the object ID as a service principal or managed identity
-        $Id = (Get-AzADServicePrincipal -DisplayName $Name).Id
-        if ($Id) {
+        $ServicePrincipal = Get-AzADServicePrincipal -DisplayName $Name
+        if ($ServicePrincipal -and $ServicePrincipal.Id) {
             Write-Host "$($Name) identified as a serviceprincipal or managed identity"
-            return $Id
+            return $ServicePrincipal.Id
+        }
+        else {
+            $ServicePrincipal = Get-AzADServicePrincipal -ServicePrincipalName $Name
+            if ($ServicePrincipal -and $ServicePrincipal.Id) {
+                Write-Host "$($Name) identified as a serviceprincipal or managed identity"
+                return $ServicePrincipal.Id
+            }
         }
 
         # Try to get the object ID as a user
-        $Id = (Get-AzADUser -DisplayName $Name).Id
-        if ($Id) {
+        $User = Get-AzADUser -DisplayName $Name
+        if ($User -and $User.Id) {
             Write-Host "$($Name) identified as a user"
-            return $Id
+            return $User.Id
+        }
+        else {
+            $User = Get-AzADUser -UserPrincipalName $Name
+            if ($User -and $User.Id) {
+                Write-Host "$($Name) identified as a user"
+                return $User.Id
+            }
         }
 
         # Try to get the object ID as a group
-        $Id = (Get-AzADGroup -DisplayName $Name).Id
-        if ($Id) {
+        $Group = Get-AzADGroup -DisplayName $Name
+        if ($Group -and $Group.Id) {
             Write-Host "$($Name) identified as a group"
-            return $Id
+            return $Group.Id
         }
 
         Write-Host "$($Name) not identified as a user, group, serviceprincipal, or managed identity" -ForegroundColor Red

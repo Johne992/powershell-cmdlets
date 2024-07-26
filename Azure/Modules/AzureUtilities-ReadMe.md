@@ -41,6 +41,9 @@ To use the `AzureUtilities` module, follow these steps:
 
 ## Changelog
 
+### Version 1.5.2 07/25/2024
+- Updated `Get-ObjectId` function
+
 ### Version 1.5.1 07/24/2024
 - Updated `Get-ObjectId` function
 
