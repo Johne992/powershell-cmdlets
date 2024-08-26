@@ -12,7 +12,14 @@ $TemplateParameters = ""
 
 Set-AzureContext -SubscriptionName $SubscriptionName
 
-New-AzResourceGroupDeployment `
--ResourceGroupName $ResourceGroupName `
--TemplateFile $ARMTemplate `
--TemplateParameterObject $templateParameters
+if ($TemplateParameters -eq "") {
+    New-AzResourceGroupDeployment `
+        -ResourceGroupName $ResourceGroupName `
+        -TemplateFile $ARMTemplate
+}
+else {
+    New-AzResourceGroupDeployment `
+        -ResourceGroupName $ResourceGroupName `
+        -TemplateFile $ARMTemplate `
+        -TemplateParameterObject $templateParameters
+}

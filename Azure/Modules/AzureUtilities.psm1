@@ -7,12 +7,12 @@ The Azure Utilities Module contains a collection of functions that simplify comm
 
 .NOTES
 Author: John Lewis
-Version: 1.5.1
+Version: 1.6.0
 Created: 01/18/2024
-Updated: 05/16/2024
+Updated: 07/26/2024
 Function Updates:
-- Add-AzRBAC: 3.2.0
-
+- Deploy-ResourceGroup - checks if a resource group exists or not and deploy it if it does not exist.
+- Add-AzRBAC - updated to handle multiple object IDs for resources that are arrays of objects.
 .LINK
 GitHub Repository: https://github.com/your-repo
 
@@ -39,7 +39,11 @@ The name of the user, group, or service principal to get the object ID for.
 Get-ObjectId -Name "MyUserOrGroupOrServicePrincipal"
 
 .NOTES
-Version: 2.0.0
+.NOTES
+Version:        2.0.2
+Author:         John Lewis
+Creation Date:  2024-07-25
+Purpose/Change: Updated the funciton to use -UserPrincipalName parameter if -DisplayName parameter does not return an object ID for a user.
 #>
 function Get-ObjectId {
     param (
@@ -55,24 +59,38 @@ function Get-ObjectId {
     try {
         Write-Host "Getting object ID for $($Name)"
         # Try to get the object ID as a service principal or managed identity
-        $Id = (Get-AzADServicePrincipal -ServicePrincipalName $Name).Id
-        if ($Id) {
+        $ServicePrincipal = Get-AzADServicePrincipal -DisplayName $Name
+        if ($ServicePrincipal -and $ServicePrincipal.Id) {
             Write-Host "$($Name) identified as a serviceprincipal or managed identity"
-            return $Id
+            return $ServicePrincipal.Id
+        }
+        else {
+            $ServicePrincipal = Get-AzADServicePrincipal -ServicePrincipalName $Name
+            if ($ServicePrincipal -and $ServicePrincipal.Id) {
+                Write-Host "$($Name) identified as a serviceprincipal or managed identity"
+                return $ServicePrincipal.Id
+            }
         }
 
         # Try to get the object ID as a user
-        $Id = (Get-AzADUser -UserPrincipalName $Name).Id
-        if ($Id) {
+        $User = Get-AzADUser -DisplayName $Name
+        if ($User -and $User.Id) {
             Write-Host "$($Name) identified as a user"
-            return $Id
+            return $User.Id
+        }
+        else {
+            $User = Get-AzADUser -UserPrincipalName $Name
+            if ($User -and $User.Id) {
+                Write-Host "$($Name) identified as a user"
+                return $User.Id
+            }
         }
 
         # Try to get the object ID as a group
-        $Id = (Get-AzADGroup -DisplayName $Name).Id
-        if ($Id) {
+        $Group = Get-AzADGroup -DisplayName $Name
+        if ($Group -and $Group.Id) {
             Write-Host "$($Name) identified as a group"
-            return $Id
+            return $Group.Id
         }
 
         Write-Host "$($Name) not identified as a user, group, serviceprincipal, or managed identity" -ForegroundColor Red
@@ -214,11 +232,11 @@ function Add-AzRBAC {
             Write-Host "Assigning $($AccessGroup.Value) role to $($AccessGroup.Name) for resource $targetName"
             foreach ($Role in $AccessGroup.Value) {
                 # Store the Id in a separate variable
-                $targetId = $target.Id
+                $targetId = $target.ResourceId  
 
-                # Check if the Id is an array of objects
+                #Check if the Id is an array of objects
                 if ($targetId -is [System.Object[]]) { 
-                    $targetId = $targetId | Where-Object { $_ -notlike '*/components/*' } | Select-Object -First 1
+                    $targetId = $TargetId | Where-Object { $_ -notlike '*/components/*' } | Select-Object -First 1
                 }
 
                 # Check if the role is already assigned
@@ -1129,5 +1147,61 @@ function Update-ServicePrincipalSecret {
     }
     catch {
         Write-Error "An error occurred while updating the service principal's secrets: $_"
+    }
+}
+
+<#
+.SYNOPSIS
+This function ensures that a resource group exists in Azure.
+
+.DESCRIPTION
+This function checks if a resource group exists in Azure. If the resource group does not exist, it creates it in the specified location with the specified tags.
+
+.PARAMETER ResourceGroupName
+The name of the resource group to ensure.
+
+.PARAMETER Location
+The location where the resource group should be created.
+
+.PARAMETER Tags
+A hashtable of tags to assign to the resource group.
+
+.EXAMPLE
+Deploy-ResourceGroup -ResourceGroupName "MyResourceGroup" -Location "East US" -Tag @{"Environment"="Production"; "Department"="IT"}
+
+This command ensures that a resource group named "MyResourceGroup" exists in the "East US" location with the specified tags.
+
+.NOTES
+Version: 1.0.0
+Creation Date: 07/26/2024
+This is the first version of the function out of beta.
+
+.LINK
+https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/manage-resource-groups-portal
+#>
+function Deploy-ResourceGroup {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$ResourceGroupName,
+        [Parameter(Mandatory = $true)]
+        [string]$Location,
+        [Parameter(Mandatory = $false)]
+        [hashtable]$Tag
+    )
+
+    try {
+        $resourceGroup = Get-AzResourceGroup -Name $ResourceGroupName -ErrorAction SilentlyContinue
+
+        if (-not $resourceGroup) {
+            Write-Host "Creating resource group $ResourceGroupName in location $Location"
+            New-AzResourceGroup -Name $ResourceGroupName -Location $Location -Tag $Tag
+        }
+        else {
+            Write-Host "Resource group $ResourceGroupName already exists"
+        }
+    }
+    catch {
+        Write-Error "An error occurred while ensuring the resource group: $_"
     }
 }
