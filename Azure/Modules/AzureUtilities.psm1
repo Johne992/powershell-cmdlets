@@ -214,11 +214,11 @@ function Add-AzRBAC {
             Write-Host "Assigning $($AccessGroup.Value) role to $($AccessGroup.Name) for resource $targetName"
             foreach ($Role in $AccessGroup.Value) {
                 # Store the Id in a separate variable
-                $targetId = if ($target.Id -is [System.Object[]]) { 
-                    $target.Id | Where-Object { $_ -notlike '*/components/*' } | Select-Object -First 1
-                }
-                else { 
-                    $target.Id 
+                $targetId = $target.Id
+
+                # Check if the Id is an array of objects
+                if ($targetId -is [System.Object[]]) { 
+                    $targetId = $targetId | Where-Object { $_ -notlike '*/components/*' } | Select-Object -First 1
                 }
 
                 # Check if the role is already assigned
